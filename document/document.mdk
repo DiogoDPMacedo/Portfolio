@@ -1,0 +1,74 @@
+Title         : Orçamento para a construção da plataforma de monitorização de dor no local de trabalho
+Sub Title   : Considerações de design, levantamento de requesitos e seleção de provedores de IaaS
+Author        : Carolina Cardoso, Diogo Macedo
+Logo          : False
+
+[TITLE]
+
+# Levantamento de Requesitos 
+
+O processo de monitorização e previsão da evolução da dor no contexto da medicina do trabalho, levanta vários problemas em termos de *design*, *compliance* e recursos necessários.
+
+## Requesitos
+
+De um ponto de vista dos sistemas de informação, a aplicação proposta têm que deverá ter as seguintes capacidades de processamento, armazenamento e tratamento de dados: 
+
+- Interface entre o sistema e os médicos que operacionalizam a medicina no trabalho nas diferentes empresas.
+- Interface entre o sistema e os trabalhadores, no caso de haver utilização do auto-monitorização.
+- Interface entre o sistema e gestores, onde métricas podem ser observadas, informando futuras decisões e investimentos na forma como a empresa equipa, forma e cuida do bem estar dos seus trabalhadores.
+- Base de dados onde são armazenados tanto os utilizadores, como resgistos criados pelos profissionais na medicina no trabalho como também os trabalhadores.
+- Processamento de dados populacionais para gerar modelos adequados para a previsão de outcomes.
+
+## Compliance
+
+No processo de desenvolvimento desta solução de *software*, temos que ter em consideração as implicações das diferentes regulamentações que podem regular a nossa atividade. Isto torna-se tão mais critico, quanto o facto de esta ser uma plataforma relacionada com dados médicos. 
+
+Um primeiro hipotético *deployment* desta plataforma iria occorrer no interior da União Europeia, sendo assim necessário obdecer aos seu regulamentos e diretivas.
+
+Num momento inicial enquanto esta platforma recolher, armazenar e disponibilizar simplesmente dados médicos, sem recorrer a qualquer forma de processamento esta não seria considerada um dispositivo médico, mas no decorrer do avanço no roadmap, e havendo sucesso na implementação de modelos de previsão, então poderá ser considerado um dispositivo de classe IIA, segundo o Regulanto 2017/745 'Regulamento dos Dispositivos Médicos', em vigor. Isto porque existe a recolha e processamento de dados fisiológicos, sem existir risco eminente do uso destes, dado a natureza da aplicação deste *software*. A consequência maior desta classificação é a necessidade de existir uma relação com o **Organismo Notificado**, nesta caso ainda não foi designado para Portugal o organismo ao qual seria necessário pedir acompanhamento.
+
+Neste mesmo ambito existe ainda outro regulmamento que deve ser observado na criação do software que é o Regulamento Geral de Proteção de Dados. Este é mais leve em termos, dado que exige legitimar a posse por parte da nossa plataforma, que iria atuar como um processador, o que poderá occorrer por recolha de consentimento. Existe também de perceber que dados são necessários e criar sistemas que garantêm dentro do espectável a segurança de dados. Por fim e como o ambito da plataforma se foca puramente no processamento de dados a designação de um *Data Protection Officer* seria um passo importante tanto para efeitos de compliance como para fortalecer a confiança dos clientes.
+
+## Design e Arquitetura
+
+### Armazenamento de Dados
+
+Um dos pontos mais importantes na criação destes sistema seria o armazenamento de dados. Neste caso, perante uma situação *multi-tenant*, será relevante considerar uma abordagem de isolamento dos dados entre clientes. Esta abordagem é muito mais comum no mundo da informática médica versus outras arquiteturas e ao mesmo tempo traria vantagens na nossa flexibilidade de trabalhar com requesitos que certos clientes possam ter e as necessidades destes em relação às suas próprias necessidades de *compliance* que podem depender dependendo da sua indústria.
+
+Na prática o que esta arquitetura implica é a existência de servidores que albergam bases de dados separadas para cada cliente, sendo que um cliente pode mesmo pedir para a criação de diversas bases de dados isoladas. Como referido anteriormente esta abordagem fornece-nos alguma flexibilidade, pois podemos transferir facilmente cada base de dados para um servidor numa área regulamentar especifica ou limitar os acessos a estas àreas geográficas. Ao mesmo tempo poderiam ser oferecidos diferentes niveis de "sevidores", fornecendo capacidades extras em termos de segurança, backup ou outros.
+
+Em termos da interface entre os diversos utilizadores descritos anteriormente e o resto do sistema, existe uma diversidade de meios que podem ser usados, dependendo das necessidades destes.
+
+
+### Introdução e Consumo de Dados
+
+Utilizadores como os gestores e os profissionais de medicina contamos que tenham facilmente acesso a um computador ligado à internet, sendo em tão uma *web-app* uma abordagem muito flexivel que nós permite através de *deployment* em *CI/CD* rápidamente integrar novas capacidades como corrigir erros sem a necessiade de recorrer a uma equipa de *IT* para descarregar e instalar novas versões do software. A mesmo tempo, pela própria natureza da complexidade das tarefas realizadas por estes utilizados, a utilização de aplicações *mobile* não iria fornecer a melhor experiência, e como tal não seria prioritária. A única exceção seria o uso de tablets que muitas vezes são utilizados em locais de construção ou ambiente industrial, sendo que poderia haver uma adaptação da nossa *web app* para estes formatos. 
+
+O outro tipo de utilizador poderia usufruir de um leque maior de plataformas, tanto para inserir informação como para a consumir, por exemplo na forma de análises simples. Este ponto do consumo teria que ser cuidadosamente planeado de forma a evitar *a priori* desconforto, ansiedade no utilizar, isto porque existe o risco de esta informação mal interpretada pelo utilizador e ser considerada alguma forma de aconselhamento médico profissional. Entre as plataformas que poderia ser usadas para recolher informações regularmente poderemos ter uma aplicação no telemóvel, email encriptado (PGP), sistema de mensagens SMS, uma *web app* ou por uma chamada automática. Contamos assim com meios que em que os resgistos poderão ser feitos tanto por introdução direta na interface ou por voz. Com os avanças técnologicos em diferentes aréas como o processamento de linguagem natural e a existencia de diferentes plataformas que já os implementaram de forma matura, este leque permitiria alcançar diferentes industrias que terão profissionais que no seu contexto socio-económico terão diferentes niveis de familaridade com as tecnologias da informação e comunicação. O nosso objetivo é reduzir o atrito entre o individuo e a nossa plataforma. 
+
+### Processamento de dados
+
+Inicialmente a plataforma não teria uma quantidade suficiente de dados para os dados capturados durante o seu uso serem utilizados para criar melhores modelos de predição de *outcomes* médicos com base na dor. Como tal o nosso foco seria desenvolver os mesmos com base em *datasets* públicos. Mais tarde a abordagem seria uma de *big-data*, neste caso dependendo das diferentes situações regulamentares dos nossos clientes, a informação dos diferentes individuos poderia ser primeiro, ainda dentro das bases de dados individuais anonimizada, e mesmo transformada, de tal forma a não ser identificável como muito pouco utíl sem ser para a finalidade de treinar os nossos modelos. Estas abordagens de *data-mining* seriam desenhadas para utilizarem os dados estritamente necessários e especificamente para os processamentos planeados. A informação seria reunida assim em *data-warehouses* onde os nossos modelos poderiam ser treinados à medida que novos dados eram recolhidos, como também testados contra estes novos dados para perceber a qualidade da nossa plataforma e perceber potências estratégias para melhor servir as necessiadades dos nossos clientes.
+
+Tanto os modelos iniciais como aqueles posteriormente desenvolvidos seriam disponibilizados de forma interna nos nossos servidores para que as diferentes interfaces possam fazer uso deles, sempre que necessário, sendo que também para evitar o movimento de dados, o minimo teria que sair da nossa infrasturua, que mais uma vez estaria distribuida por diversos *data-centers* para dar respostas às necessidades regionais.
+
+## Recursos e Orçamentação
+
+### Infrastrutura Digital
+
+O percurso mais simples para obter uma infrastrutura robusta, com a possibilidade de facilmente escalar, com o crescimento do negócio é a utilização de um serviço de *cloud*.
+
+Para fins de simulação das nossas despesas iremos utilizar os serviços da empresa *Linode*, esta utiliza um sistema de preços mais simples em relação à competição, em geral é também mais económica, como também usa sistemas mais abertos, sendo possivél aceder ao codigo de grande parte da sua plataforma, o que pode facilitar futuros desafios em termos de *complaince*. Ao mesmo tempo está têm serviços para facilitar o cumprimento da RGPD, como do HIPPA nos seus diferentes data centers. Para o desenvolvimento inicial, seria utilizado o *data center* em *Frankfurt*.
+
+Serão necessários então servidores para as bases de dados e servir as diversas interfaces. O provedor selecionado, permite variar facilemente o número de servidores ativos e a distribuição de carga entre eles com base na atividade. Isto quer dizer que sem criação de simulações realistas se torna difícil prever de forma precisa os custos associados. Porém é possivel estimar os usos minimos da infraestrutura. Os principais elementos que requerem consideração é o nº de funcionarios a
+serem monitorizados, a taxa de adesão destes que resulta num maior volume de dados e utilização e o volume de consultas de profissionais de medicina no trabalho. Como tal não existe nem um grande volume de dados (algumas dezenas a centenas de funcionários a submeter o seu estado diário e poucas consultas). Para esta carga 20-40 euros em micro-servidores, cerca de 10-20 euros para espaço de armazenagem e cópias de segurança e 10 euros em serviços de rede. Anualmente existem também gastoss em domínios (.pt, .com, etc) e sendo que cada um pode ficar entre 10 a 30 euros. Alguns destes recursos poderiam ser usados para a utilização de ferramentas de desenvolvimento internas.
+
+Esta infrasestrutura, permitira ter 5-10 clientes com cerca de 100 clientes sem em nenhum momento existitirem atrasos e diminuição da qualidade do serviço.
+
+Espontaneamente podem também ser usados servições de computação gráfica para treinar modelos, serviço que o *Linode* também disponibiliza, sendo possivél pagar pelas horas e recursos de computação utilizados.
+
+A passagem para uma abordagem *big-data* como iria requerer a existência de uma maior base de clientes, só poderá ser estimada mais tarde. Porém o provedor utilizado, iria permitir fazer a utilização de todas as técnologias necessárias.
+
+### Recursos Humanos
+
+No desenvolvimento desta plataforma seriam necessários de vários tipos de desenvolvedores. Primeiro seriam profissionais na àrea na informatica médica para colaborar no desenvolvimento de arquiteturas dos diferentes sistemas de dados, devido à sua experiência e *domain specific knowledge*. Estes são importantes pela sua compressão de diversos *standards* para o transporte, armazenamento e manipulação de dados médicos. Estes poderiam também liderar as equipas de pessoal de desenvolvimento que podem ter *skillsets* mais genéricos.
